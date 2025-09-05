@@ -1,0 +1,27 @@
+# PyCharm project settings
+.idea/
+
+# Python cache & virtual env
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+venv/
+.env/
+
+# Logs & temp
+*.log
+*.tmp
+
+# Explicitly exclude CSV files
+*.csv
+
+# Explicitly exclude MySQL data folder
+mysql_data/
+
+# Keep docker-compose.yml, SQL, and Python files tracked
+!docker-compose.yml
+!*.sql
+!*.py

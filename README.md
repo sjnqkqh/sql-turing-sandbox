@@ -21,15 +21,40 @@ MySQL 8.0.18+ ( EXPLAIN ANALYZE 지원 버전 )
 
 
 실험 요약 (1–8)
-#	데이터셋(기간 선택도)	접근 방식/전략	실행 시간*	결과 건수
-1	2024~2025 (높음)	member_no_pk 인덱스 없음, 드라이빙 전환	1,370,000 ms (~22m50s)	—
-2	2024~2025 (높음)	Full Scan + PK Lookup	15,177 ms	99,985
-3	2024~2025 (높음)	Covering Index Range Scan (order_date, member_id)	4,348 ms	99,985
-4	2019~2025 (낮음)	Full Scan + PK Lookup	8,828 ms	71,688
-5	2019~2025 (낮음)	Covering Index Range Scan	592 ms	71,688
-6	2019~2025 (낮음)	IN/EXISTS(세미조인 유사)	~200 ms	71,688
-7	20192025 (낮음) / 20242025 (높음)	Paging + 정렬 인덱스(LIMIT 50)	17 ms / 621 ms	50
-8	2024~2025 (높음)	비효율적 단일 인덱스(order_date만)	96,518 ms	99,985
+
+[1] Worst case (2024~2025, high selectivity)
+- 전략: member_no_pk(인덱스 없음) → 드라이빙 전환
+- 시간: 1,370,000 ms (~22m50s)
+- 결과: —
+
+[2] 2024~2025 (높음) — Full Scan + PK Lookup
+- 시간: 15,177 ms (15.18 s)
+- 결과: 99,985 rows
+
+[3] 2024~2025 (높음) — Covering Index Range Scan (order_date, member_id)
+- 시간: 4,348 ms (4.35 s)
+- 결과: 99,985 rows
+
+[4] 2019~2025 (낮음) — Full Scan + PK Lookup
+- 시간: 8,828 ms (8.83 s)
+- 결과: 71,688 rows
+
+[5] 2019~2025 (낮음) — Covering Index Range Scan
+- 시간: 592 ms (0.59 s)
+- 결과: 71,688 rows
+
+[6] 2019~2025 (낮음) — IN / EXISTS (세미조인 유사)
+- 시간: ~200 ms
+- 결과: 71,688 rows
+
+[7] Paging + 정렬 인덱스 (LIMIT 50)
+- 2019~2025(낮음): 17 ms
+- 2024~2025(높음): 621 ms
+- 결과: 50 rows
+
+[8] 2024~2025 (높음) — 단일 order_date 인덱스(안티 패턴)
+- 시간: 96,518 ms (96.52 s)
+- 결과: 99,985 rows
 
 * 측정 값은 실험 환경/캐시 상태에 따라 달라질 수 있습니다.
 
@@ -66,10 +91,6 @@ Full Scan: 8.83s → Covering Range: 0.59s → IN/EXISTS: ~0.2s → Paging(50): 
 예) orders_narrow_order_date_member_id_index, orders_2019_2025_order_date_member_id_index, members_last_login_at_index 등
 
 페이지 단위의 실사용 케이스는 07/07b를 참고하시면 됩니다. (정렬 인덱스와 LIMIT 0, 50)
-
-라이선스
-
-리포지토리 정책에 맞게 설정해 주세요. (예: MIT)
 
 문의
 
